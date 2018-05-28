@@ -1,0 +1,48 @@
+body{
+	font-size:16px;
+	font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,Courier,monospace
+}
+.item {
+	margin-top:20px;
+	background-color:rgba(38,43,52,1);
+}
+.item .name{
+	margin-top:10px;
+	font-weight:900;
+	color:#fff;
+	height:60px
+}
+.text-nopadding{
+	padding-left:0px;
+	padding-right:0px
+}
+.prices{
+	margin-top:10px;
+	background-color:rgba(56,59,65,1);
+	height:50px
+}
+.prices .price{
+	text-align:right
+}
+
+.non-plus{
+	color:rgba(0,108,255,1);
+	font-weight:700;
+}
+.plus{
+	color:rgba(255,201,38,1);
+	font-weight:700;
+}
+.tools{
+	position:fixed;
+	bottom:10px;
+	right:0px;
+	width:120px;
+	border:2px solid #f2f2f2;
+	background-color:rgba(200,200,200,0.8)	
+}
+.platforms{
+	font-size:14px;
+	color:rgb(138,138,138);
+	
+}

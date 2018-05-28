@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="Tilerphy">
+    <title>PSN Sales</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/index.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+	<div class="container">
+						<div class="col-md-4 col-lg-4 col-sm-4 col-xs-4" id="n1">
+						</div>
+						<div class="col-md-4 col-lg-4 col-sm-4 col-xs-4" id="n2">
+						</div>
+						<div class="col-md-4 col-lg-4 col-sm-4 col-xs-4" id="n3">
+						</div>
+	</div>
+	<div class="tools">
+		<span class="col-md-12 col-lg-12 col-sm-12 col-xs-12">同步时间</span>
+		<span id="lastTime" class="col-md-12 col-lg-12 col-sm-12 col-xs-12"></span>
+		<button id="changeHQButton" class="col-md-12 col-lg-12 col-sm-12 col-xs-12" onclick="changeHQ()">高清</button>
+		<button id="orderButton" class="col-md-12 col-lg-12 col-sm-12 col-xs-12" onclick="dealDown()" >折扣降序</button>
+	</div>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/js/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="/js/jquery.min.js"><\/script>')</script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script>
+	var page = {{page}};
+	var pageSize ={{pageSize}};
+	var isHQ = {{isHQ}};
+	var itemCount = 0;
+	var order = "{{order}}";
+	var loading = true;
+	$("#changeHQButton").text(isHQ?"低清":"高清");
+	$("#orderButton").text(order!="asc"?"折扣升序":"折扣降序");
+	function dealDown(){
+		page=1;
+		window.location.href="/"+(isHQ?"high":"low")+"/"+(order!="asc"?"asc":"desc")+"/"+page+"/"+pageSize;
+	}
+	function changeHQ(){
+		page=1;
+		window.location.href="/"+(!isHQ?"high":"low")+"/"+order+"/"+page+"/"+pageSize;
+	}
+	$.get("/js/sync.txt",function(data){
+		$("#lastTime").text(data);
+	});
+	load();
+	window.addEventListener("scroll", ()=>{
+		if($(window).scrollTop() + $(window).height() >= $(document).height()){
+			load();
+		}
+	}, false);
+	function load(){
+	$.get("/"+order+"/"+page+"/"+pageSize, function(data){
+		
+		for(var i in data){
+			var item=$("<div class='text-nopadding item col-md-12 col-lg-12 col-sm-12 col-xs-12' id='"+data[i].id+"'></div>");
+			var img =$("<img class='text-nopadding col-md-12 col-lg-12 col-sm-12 col-xs-12' src='"+data[i].attributes["thumbnail-url-base"]+
+				(isHQ?"?w=640&h=640":"?w=240&h=240")+
+				"'/>");
+			
+			item.append(img);
+			var nameText = $("<div class='name col-md-12 col-lg-12 col-sm-12 col-xs-12'>"+data[i].attributes.name+"("+
+				data[i].attributes.skus.name+")</div>");
+			item.append(nameText);
+			var platforms = $("<div class='platforms col-md-12 col-lg-12 col-sm-12 col-xs-12'>"+data[i].attributes.platforms.join(" | ")+"</div>");
+			item.append(platforms);
+			var prices = $("<div class='prices col-md-12 col-lg-12 col-sm-12 col-xs-12'></div>");
+			//var skuId = data[i].attributes["default-sku-id"];
+			//var skuRealIndex = 0;
+			//for(var skuIndex in data[i].attributes.skus){
+			//	if(data[i].attributes.skus[skuIndex].id == skuId){
+			//		skuRealIndex = skuIndex;
+			//	}
+			//}
+			var displayItem = data[i].attributes.skus;
+			if(displayItem.multibuy){
+				var mbuy = $("<div class='text-nopadding col-md-12 col-lg-12 col-sm-12 col-xs-12'>"+
+                                        "<span class='text-nopadding col-md-6 col-lg-6 col-sm-6 col-xs-6 non-plus'>买"+
+                                        displayItem.multibuy.minimumInCart
+                                        +"折扣"+displayItem.multibuy.discount+"%</span>"+
+                                        "<span class='col-md-6 col-lg-6 col-sm-6 col-xs-6 text-nopadding non-plus price'>"+
+                                        displayItem.multibuy.displayPrice+"</span></div>");
+				prices.append(mbuy);
+			}else{
+				var nonPlus = $("<div class='text-nopadding col-md-12 col-lg-12 col-sm-12 col-xs-12'>"+
+					"<span class='text-nopadding col-md-6 col-lg-6 col-sm-6 col-xs-6 non-plus'>"+
+					displayItem.prices["non-plus-user"]["discount-percentage"]
+					+"%</span>"+
+					"<span class='col-md-6 col-lg-6 col-sm-6 col-xs-6 text-nopadding non-plus price'>"+
+					displayItem.prices["non-plus-user"]["actual-price"].display+"</span></div>");
+				prices.append(nonPlus);
+
+				var plus = $("<div class='text-nopadding col-md-12 col-lg-12 col-sm-12 col-xs-12'>"+
+                                	"<span class='text-nopadding col-md-6 col-lg-6 col-sm-6 col-xs-6 plus'>"+
+                                	displayItem.prices["plus-user"]["discount-percentage"]
+                                	+"%</span>"+
+                                	"<span class='col-md-6 col-lg-6 col-sm-6 col-xs-6 text-nopadding plus price'>"+
+                                	displayItem.prices["plus-user"]["actual-price"].display+"</span></div>");
+                        	prices.append(plus);
+			}
+			item.append(prices);
+			item.click(function(){
+				window.location.href="https://store.playstation.com/zh-hant-hk/product/"+this.id;
+			});
+			$("#n"+(itemCount%3+1)).append(item);
+			itemCount++;
+		}
+		page++;
+		loading = false;
+	});
+	}
+    </script>
+  </body>
+</html>
